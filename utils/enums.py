@@ -13,3 +13,12 @@ class SystemState(Enum):
     RUNNING = 2
     SUCCESS = 0
     FAILURE = 1
+
+
+class AccountType(Enum):
+    CHECKING = 1
+    SAVING = 2
+
+class TransactionType(Enum):
+    WITHDRAW = 1
+    DEPOSIT = 2
