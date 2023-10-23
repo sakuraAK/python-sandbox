@@ -245,6 +245,9 @@ class Bank(BankingService):
         if token in self._session.keys():
             del self._session[token]
 
+    def get_all_clients(self):
+        return self._clients.values()
+
     @staticmethod
     def super_secure_hash(plain_pwd: str) -> str:
         # todo: provide implementation for encrypted hash
