@@ -2,7 +2,6 @@ import abc
 import uuid
 from abc import  ABC
 from datetime import datetime
-from uuid import uuid1
 import asyncio
 
 from utils.enums import AccountType
@@ -40,6 +39,13 @@ class Client:
         self.pin = pin
         self._accounts = {}
 
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value: str):
+        self._name = value.upper()
 
     @property
     def client_number(self):
@@ -92,13 +98,16 @@ class WebUser:
     def client(self, value):
         self._client = value
 
-
+    def get_accounts(self) -> dict:
+        if self.client:
+            return self.client.get_accounts()
+        return None
 
 class Transaction(ABC):
     def __init__(self, type, amount):
         self._type = type
         self._amount = amount
-        self._date = datetime.utcnow()
+        self._date = datetime.utcnow().now()
 
 class WebTransaction(Transaction):
     pass
@@ -129,7 +138,7 @@ class BankingService(ABC):
         pass
 
     @abc.abstractmethod
-    def get_balance(self, acc_type=AccountType.CHECKING) -> float:
+    def get_balance(self, token, acc_type=AccountType.CHECKING) -> float:
         pass
     @abc.abstractmethod
     def quit(self):
@@ -143,11 +152,9 @@ class Bank(BankingService):
         self._address = address
         self._clients = {}
         self._web_clients = {}
-        self._token = None
         self._session = {}
 
-    def add_client(self, ):
-        pass
+
 
     def authenticate(self, user_id: str, pwd: str) -> str:
         if user_id in self._web_clients.keys() \
@@ -158,23 +165,24 @@ class Bank(BankingService):
         return None
 
 
-    def authenticate(self, client_number: int, pin: int) -> str:
-        if client_number in self._clients \
-            and self._clients[client_number].pin == Bank.super_secure_hash(pin):
-            token = uuid.uuid4().hex
-            self._session[token] = self._clients[client_number]
-            return token
+    # def authenticate(self, client_number: int, pin: int) -> str:
+    #     if client_number in self._clients \
+    #         and self._clients[client_number].pin == Bank.super_secure_hash(pin):
+    #         token = uuid.uuid4().hex
+    #         self._session[token] = self._clients[client_number]
+    #         return token
 
-    def add_client(self, name: str, pin: int) -> int:
+    def add_client(self, name: str, pin: int) -> Client:
         new_client = Client(name, pin)
         self._clients[new_client.client_number] = new_client
-        return new_client.client_number
+        return new_client
 
     def add_web_user(self, client_number: int, user_id: str, pwd: str) -> bool:
         if client_number in self._clients.keys():
             client = self._clients[client_number]
             new_web_user = WebUser(user_id, pwd)
             new_web_user.client = client
+            self._web_clients[user_id] = new_web_user
             return True
         return False
 
@@ -197,15 +205,13 @@ class Bank(BankingService):
         if token not in self._session.keys():
             raise Exception("Unauthorized")
         client = self._session[token]
-        if acc_type not in client.get_accounts().keys():
+        if client.get_accounts() is None or acc_type not in client.get_accounts().keys():
             raise Exception(f"Client does not have {acc_type.name}")
         account = client.get_accounts()[acc_type]
-        lock = asyncio.Lock()
-        async with lock:
-            if amount > account.balance:
-                raise Exception("Insufficient funds")
-            account.balance -= amount
-            self._create_transaction(account, TransactionType.WITHDRAW)
+        if amount > account.balance:
+            raise Exception("Insufficient funds")
+        account.balance -= amount
+        self._create_transaction(account, TransactionType.WITHDRAW)
 
     def deposit(self, amount: float, token: str, acc_type=AccountType.CHECKING):
         if amount <= 0:
@@ -213,16 +219,14 @@ class Bank(BankingService):
         if token not in self._session.keys():
             raise Exception("Unauthorized")
         client = self._session[token]
-        if acc_type not in client.get_accounts().keys():
+        if client.get_accounts() is None or acc_type not in client.get_accounts().keys():
             raise Exception(f"Client does not have {acc_type.name}")
         account = client.get_accounts()[acc_type]
-        lock = asyncio.Lock()
-        async with lock:
-            account.balance += amount
-            self._create_transaction(account, TransactionType.DEPOSIT)
+        account.balance += amount
+        self._create_transaction(account, TransactionType.DEPOSIT)
 
 
-    def get_balance(self, acc_type=AccountType.CHECKING) -> float:
+    def get_balance(self, token, acc_type=AccountType.CHECKING) -> float:
         if token not in self._session.keys():
             raise Exception("Unauthorized")
         client = self._session[token]
@@ -256,16 +260,16 @@ if __name__ == '__main__':
     # First we set up client and the account to be used
     # This part of the code is out of the scope of our UML
     service = Bank('FNBU', '1000', 'Nowhere in particular')
-    new_client_number = service.add_client()
+    new_client = service.add_client('John Doe', 1234)
     user_id = "JohnDoe"
     pwd = "StrongPassword123"
-    service.add_web_user(new_client_number, user_id, pwd)
-    service.add_account(new_client_number, AccountType.CHECKING)
+    service.add_web_user(new_client.client_number, user_id, pwd)
+    service.add_account(new_client.client_number, AccountType.CHECKING)
 
     #deposit example
     token = service.authenticate(user_id, pwd)
-    if token:
-        service.deposit(1000, AccountType.CHECKING)
-        print(f"Hi {user_id} your new balance is {service.get_balance(AccountType.CHECKING)}")
+    if token != None:
+        service.deposit(1000, token, AccountType.CHECKING)
+        print(f"Hi {user_id} your new balance is {service.get_balance(token, AccountType.CHECKING)}")
         service.quit(token)
 
