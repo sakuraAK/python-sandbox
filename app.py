@@ -1,29 +1,28 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import json
+from flask_swagger_ui import get_swaggerui_blueprint
+from blueprints.basic_endpoints import blueprint as basic_endpoints
 
 app = Flask(__name__)
-import model.bank_management as bm
+app.register_blueprint(basic_endpoints)
 
-@app.route('/')
-def index():
-    return 'Index Page'
 
-@app.route('/bank_api/hello_world')
-def hello_world():
-    return 'Hello, World!'
 
-@app.route('/bank_api/clients', methods=['GET', 'POST'])
-def clients():
-    service = bm.Bank("", "", "")
-    if request.method == 'GET':
-        service.add_client('John Doe', 1234)
-        service.add_client('John Doe 1', 12345)
-        service.add_client('John Doe 2', 12346)
-        clients = service.get_all_clients()
-        return [x.__dict__ for x in clients]
-    if request.method == 'POST':
-        data = dict(request.json)
-        # print(request.json)
-        # client = bm.Client(data['name'], data['pin'])
-        return { "client_number" : service.add_client(data['name'], data['pin']).client_number }
+SWAGGER_URL = '/swagger'
+API_URL = 'http://127.0.0.1:5000/swagger.json'
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "Sample API"
+    }
+)
+app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
+@app.route('/swagger.json')
+def swagger():
+    with open('swagger.json', 'r') as f:
+        return jsonify(json.load(f))
+
+if __name__ == '__main__':
+    app.run(debug=True)
