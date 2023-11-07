@@ -34,8 +34,8 @@ def tower_test_no_factory():
 
 
 if __name__ == "__main__":
-    tower_test_no_factory()
-    print('------------------------')
+    # tower_test_no_factory()
+    # print('------------------------')
     tower_test_factory()
 
 # To add Ice tower I will need to modify this code which breaks the open/closed prinicple
