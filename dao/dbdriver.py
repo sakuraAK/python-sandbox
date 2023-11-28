@@ -78,3 +78,39 @@ class DBWrapper:
             else:
                 return
         self.__create_all__()
+
+if __name__ == "__main__":
+    db = DBWrapper()
+    db.setup(True)
+    session = db.get_session()
+
+    # add users
+    user1 = User()
+    user1.user_id = 1
+    user1.name = "Andrey"
+    user1.email = "and@gmail.net"
+    user1.dob = "1/1/2000"
+    user1.pwd = "1234"
+
+    session.add(user1)
+
+    user1 = User()
+    user1.user_id = 2
+    user1.name = "Sam"
+    user1.email = "sam@gmail.net"
+    user1.dob = "1/1/2000"
+    user1.pwd = "1234"
+
+    session.add(user1)
+
+    user1 = User()
+    user1.user_id = 3
+    user1.name = "Frodo"
+    user1.email = "frd@gmail.net"
+    user1.dob = "1/1/2000"
+    user1.pwd = "1234"
+
+    session.add(user1)
+
+    session.flush()
+    session.commit()

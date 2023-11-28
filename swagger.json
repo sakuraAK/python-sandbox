@@ -1,60 +1,113 @@
 {
     "swagger": "2.0",
     "info": {
-      "title": "Sample API",
-      "description": "A sample API that demonstrates how to use Flask-SwaggerUI.",
-      "version": "1.0"
+      "title": "Demo API",
+      "version": "1.0.0"
     },
     "basePath": "/basic_api",
-    "schemes": [
-      "http"
-    ],
-    "consumes": [
-      "application/json"
-    ],
-    "produces": [
-      "application/json"
-    ],
     "paths": {
-      "/hello_world": {
+      "/": {
         "get": {
-          "summary": "Returns a simple greeting message.",
+          "description": "Returns message showing app is up",
           "produces": [
             "application/json"
           ],
           "responses": {
             "200": {
-              "description": "Successful response.",
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string"
-                  }
-                }
-              }
+              "description": "Successful operation"
             }
           }
         }
       },
-      "/echo": {
+      "/users/{id}" : {
         "get": {
-          "summary": "Returns a simple greeting message.",
+          "description": "Get user by id",
           "produces": [
             "application/json"
           ],
-          "responses": {
-            "200": {
-              "description": "Successful response.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "JSON data for the api",
+              "required": true,
               "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string"
-                  }
-                }
+                "type": "integer"
               }
             }
+          ],
+          "responses": {
+            "200": {
+              "description": "User returned"
+            },
+            "400": {
+              "description": "Invalid request data"
+            }
+          }
+        }
+      },
+
+      "/users": {
+        "post": {
+          "description": "Add new user",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "user data",
+              "in": "body",
+              "description": "JSON data for the api",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/UserData"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User added"
+            },
+            "400": {
+              "description": "Invalid request data"
+            }
+          }
+        },
+        "get": {
+          "description": "Get users",
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "filter",
+              "in": "query",
+              "description": "Filter the result",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Users list"
+            },
+            "400": {
+              "description": "Invalid request data"
+            }
+          }
+        }
+      }
+    },
+    "definitions": {
+      "UserData": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
           }
         }
       }
