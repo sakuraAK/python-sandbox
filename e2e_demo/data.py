@@ -61,14 +61,19 @@ class DbWrapper:
         self.session.add(user)
         self.session.commit()
 
-    def get_users(self):
+    def get_users(self, filter: str):
         stmt = select(User)
+        if not filter is None:
+            stmt = select(User).filter(User.name.like(f"%{filter}%"))
         result = self.session.execute(stmt).scalars().all()
         json_result = []
         for r  in result:
             json_result.append(r.to_json())
         print(json_result)
         return json_result
+
+    def add_tweet(self, message: str, user_id: int):
+        pass
 
     def get_user(self, id):
         return self.session.get(User, id).to_json()

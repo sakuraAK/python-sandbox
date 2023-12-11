@@ -100,6 +100,60 @@
             }
           }
         }
+      },
+      "/tweets": {
+        "post": {
+          "description": "Add new tweet",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "tweet data",
+              "in": "body",
+              "description": "JSON data for the api",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/TweetData"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Tweet created"
+            },
+            "400": {
+              "description": "Invalid request data"
+            }
+          }
+        },
+        "get": {
+          "description": "Get tweets",
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "name": "filter",
+              "in": "query",
+              "description": "Filter the result",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Tweet list"
+            },
+            "400": {
+              "description": "Invalid request data"
+            }
+          }
+        }
       }
     },
     "definitions": {
@@ -108,6 +162,17 @@
         "properties": {
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "TweetData": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "int"
           }
         }
       }
