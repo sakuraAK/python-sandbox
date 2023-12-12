@@ -1,5 +1,5 @@
 ###### Requirements without Version Specifiers ######
 sqlalchemy
-flask
+Flask==2.3.2
 flask-restplus
 flask_swagger_ui
